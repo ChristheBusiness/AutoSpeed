@@ -24,7 +24,7 @@ export default function Pricing() {
       image: Fiesta
     },
     {
-      name: "Sandero Stepway",
+      name: "Dacia Logan",
       price: "2.500",
       description: "Cel mai popular pachet",
       features: [
@@ -139,9 +139,14 @@ export default function Pricing() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             * Prețurile sunt orientative și pot varia în funcție de locație și perioada selectată.
           </p>
+          <Button asChild size="lg" className="px-8">
+            <a href="/pricelist" className="no-underline">
+              Vezi Toate Mașinile
+            </a>
+          </Button>
         </div>
       </div>
     </section>

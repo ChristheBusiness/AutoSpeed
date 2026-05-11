@@ -20,6 +20,10 @@ export default function Contact() {
     car: "",
     extra: false
   });
+  const [phoneError, setPhoneError] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [messageError, setMessageError] = useState("");
 
   useEffect(() => {
     const applyCarFromUrl = () => {
@@ -41,8 +45,117 @@ export default function Contact() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
+  const validateName = (name: string) => {
+    return name.trim().length >= 3;
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone: string) => {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '');
+    // Check if exactly 10 digits
+    return digitsOnly.length === 10;
+  };
+
+  const validateMessage = (message: string) => {
+    return message.trim().length >= 10;
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, name: value });
+    
+    if (value.trim().length > 0 && value.trim().length < 3) {
+      setNameError("Numele trebuie să conțină cel puțin 3 caractere.");
+    } else if (value.trim().length >= 3) {
+      setNameError("");
+    } else {
+      setNameError("");
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, email: value });
+    
+    if (value.trim().length > 0 && !validateEmail(value)) {
+      setEmailError("Introduceți o adresă de email validă.");
+    } else if (validateEmail(value)) {
+      setEmailError("");
+    } else {
+      setEmailError("");
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow digits, limit to 10 characters
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    setFormData({ ...formData, phone: digitsOnly });
+    
+    // Show real-time validation error
+    if (digitsOnly.length > 0 && digitsOnly.length < 10) {
+      setPhoneError("Numărul de telefon trebuie să conțină exact 10 cifre.");
+    } else if (digitsOnly.length === 10) {
+      setPhoneError("");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, message: value });
+    
+    if (value.trim().length > 0 && value.trim().length < 10) {
+      setMessageError("Mesajul trebuie să conțină cel puțin 10 caractere.");
+    } else if (value.trim().length >= 10) {
+      setMessageError("");
+    } else {
+      setMessageError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validate all fields before submission
+    let hasError = false;
+    
+    if (!validateName(formData.name)) {
+      setNameError("Numele trebuie să conțină cel puțin 3 caractere.");
+      hasError = true;
+    }
+    
+    if (!validateEmail(formData.email)) {
+      setEmailError("Introduceți o adresă de email validă.");
+      hasError = true;
+    }
+    
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (!validatePhone(formData.phone)) {
+      setPhoneError("Numărul de telefon trebuie să conțină exact 10 cifre.");
+      hasError = true;
+    }
+    
+    if (!validateMessage(formData.message)) {
+      setMessageError("Mesajul trebuie să conțină cel puțin 10 caractere.");
+      hasError = true;
+    }
+    
+    if (hasError) {
+      toast({
+        title: "Eroare",
+        description: "Vă rugăm corectați erorile din formular.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -130,10 +243,14 @@ export default function Contact() {
                     type="text"
                     placeholder="Ion Popescu"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleNameChange}
                     required
                     data-testid="input-name"
+                    className={nameError ? "border-red-500" : ""}
                   />
+                  {nameError && (
+                    <p className="text-red-500 text-sm mt-1">{nameError}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -147,10 +264,14 @@ export default function Contact() {
                       type="email"
                       placeholder="ion.popescu@email.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={handleEmailChange}
                       required
                       data-testid="input-email"
+                      className={emailError ? "border-red-500" : ""}
                     />
+                    {emailError && (
+                      <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                    )}
                   </div>
 
                   <div>
@@ -161,12 +282,17 @@ export default function Contact() {
                       id="phone"
                       name="phone"
                       type="tel"
-                      placeholder="+40 722 123 456"
+                      placeholder="0722 123 456"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={handlePhoneChange}
                       required
                       data-testid="input-phone"
+                      maxLength={10}
+                      className={phoneError ? "border-red-500" : ""}
                     />
+                    {phoneError && (
+                      <p className="text-red-500 text-sm mt-1">{phoneError}</p>
+                    )}
                   </div>
                 </div>
 
@@ -184,9 +310,19 @@ export default function Contact() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value=" ">Selecteaza masina (optional)</SelectItem>
-                        <SelectItem value="Dacia Stepway">Dacia Stepway</SelectItem>
+                        <SelectItem value="Volkswagen Golf">Volkswagen Golf</SelectItem>
+                        <SelectItem value="Skoda Octavia">Skoda Octavia</SelectItem>
+                        <SelectItem value="Dacia Duster">Dacia Duster</SelectItem>
+                        <SelectItem value="BMW Seriea 3">BMW Seriea 3</SelectItem>
+                        <SelectItem value="Ford Focus">Ford Focus</SelectItem>
+                        <SelectItem value="Audi A4">Audi A4</SelectItem>
+                        <SelectItem value="Toyota Corolla">Toyota Corolla</SelectItem>
+                        <SelectItem value="Nissan Qashqai">Nissan Qashqai</SelectItem>
+                        <SelectItem value="Mercedes C-Class">Mercedes C-Class</SelectItem>
                         <SelectItem value="Ford Fiesta">Ford Fiesta</SelectItem>
+                        <SelectItem value="Dacia Logan">Dacia Logan</SelectItem>
                         <SelectItem value="Hyundai Accent">Hyundai Accent</SelectItem>
+                        <SelectItem value="Renault Clio">Renault Clio</SelectItem>
                       </SelectContent>
                     </Select>
                     <input type="hidden" name="car" value={formData.car} />
@@ -217,10 +353,14 @@ export default function Contact() {
                     placeholder="Descrie-ne cum te putem ajuta..."
                     rows={5}
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={handleMessageChange}
                     required
                     data-testid="input-message"
+                    className={messageError ? "border-red-500" : ""}
                   />
+                  {messageError && (
+                    <p className="text-red-500 text-sm mt-1">{messageError}</p>
+                  )}
                 </div>
 
                 <Button 

@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CheckCircle2, Shield, Car, Trophy } from "lucide-react";
 import img1 from "@assets/cursanti/n_1.jpg";
 import img2 from "@assets/cursanti/n_2.jpg";
@@ -84,6 +85,14 @@ export default function About() {
               </p>
             </Card>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Button asChild size="lg" className="px-8">
+            <a href="/despre" className="no-underline">
+              Despre Noi
+            </a>
+          </Button>
         </div>
       </div>
     </section>
